@@ -1,0 +1,43 @@
+version: "3" # 버전 지정
+
+services: # 컨테이너 설정
+  configserver:   
+    image: configserver # 컨테이너에서 사용하는 base image 지정
+    ports: # -p 옵션과 동일
+      - "8888:8888"
+    networks:
+      - nat2
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:management
+    environment: 
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks: # 서비스의 컨테이너가 연결될 네트워크를 지정
+      - nat2
+  catalog:   
+    depends_on:
+      - configserver
+      - rabbitmq
+    image: catalogs # 컨테이너에서 사용하는 base image 지정
+    ports: # -p 옵션과 동일
+      - "8081:8081"
+    networks:
+      - nat2
+  customer:
+    depends_on:
+      - configserver   
+      - rabbitmq
+    image: customers # 컨테이너에서 사용하는 base image 지정
+    ports: # -p 옵션과 동일
+      - "8082:8082"
+    networks:
+      - nat2
+  
+      
+networks: # 애플리케이션의 모든 네트워크를 정의
+  nat2: # 네트워크의 이름
+    driver: bridge
